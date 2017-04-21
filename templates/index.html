@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
+    <title>PBSys</title>
+    <link rel="stylesheet" href="{{ static_url("css/bootstrap.min.css") }}" type="text/css"/>
+    <link rel="stylesheet" href="{{ static_url("css/bootstrap-theme.min.css") }}" type="text/css"/>
+    <script type="text/javascript" src="{{ static_url("js/jquery.min.js") }}"> </script>
+
+    
+    
+<style type="text/css">
+    
+html 	{ text-align : center;  }
+
+body { 
+position : relative; 
+width : 770px; 
+margin : 0 auto; 
+text-align : left; }
+
+select input { margin: 0 auto;}
+
+html { 
+background-color : #f1efe2; }
+
+body { 
+padding-top : 50px; }
+    	
+ </style>
+
+ </head>
+ <body>
+ 	
+    
+ 	
+ 	
+
+<div id="nav" style="height:20px"> 
+	<span style="float: right" >{{ current_user['name'] }}</b> -<a href="/pbsys/auth/logout">{{ _("Sign out") }}</a></span>
+
+	
+	
+	  
+</div>
+
+
+
+<div id="con"  class="panel panel-default">
+    {% for blist in blists%}
+
+ <form class="panel panel-default" action="/pbsys/pub" method="post" target="pub"   onsubmit="window.open('','pub','scrollbars=yes,menubar=no,height=400,width=600,resizable=yes,toolbar=no,location=no,status=no');">
+{% module xsrf_form_html() %}
+ <div class="panel-heading"> <b>{{blist['pname']}}</b>
+        {%if blist['pnumb'] !="" %}
+	<input type="checkbox"  name="sid" value="{{blist['pnumb']}}" style="margin: 0; padding: 0 5px 0 0;" />
+        {%end%}
+
+
+        <select name="cid" style="margin:0;padding:0;position: absolute;right:7%"  >
+                <option selected></option>
+  		{% for  branch in  blist['bname'] %}
+                <option value="{{branch}}" >{{branch}}</option>
+                {%end%}
+        </select>
+
+ <input type="submit"  value="go" style="border: none;color: white;background: #003C52;position: absolute;right:1%" onClick="{if(confirm('\nupdate to:' + cid.value  )){return true;}return false;}"  />
+ <input type="submit"  name="check" value="c" style="border: none;color: white;background: #003C52;position: absolute;right:5%" onClick="{if(confirm('\ncheck:' + cid.value  )){return true;}return false;}"  />
+
+
+
+
+
+
+
+</div>
+
+  
+  <table class="table" >
+    
+     <thead >  
+    <tr>  
+      <th></th>  
+     
+    </tr>  
+  </thead>  
+  <tbody>  
+         {%if blist['mlist']%}
+              {% for mlist in blist['mlist']%}
+    <tr style="font-size: 12px;">  
+
+
+   	 <td>
+         <input type="checkbox"  name="sid" value="{{mlist['mnumb']}}" style="margin: 0; padding: 0 5px 0 0;" /> {{mlist['mname']}} <font color="#66b3ff"><i>{{mlist['mvers']}}</i></font>
+
+         </td> 
+
+
+    </tr>  
+              {%end%}
+         {%end%}
+  </tbody>  
+  </table>
+	
+</form>
+  {% end %}
+
+</div>
+
+	
+	
+
+  	
+    <script type="text/javascript" src="{{ static_url("js/bootstrap.min.js") }}"> </script>
+  </body>
+</html>
