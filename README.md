@@ -1,2 +1,1 @@
-# pbsys (python)
-base on gitlab 
+# pbsys

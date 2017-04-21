@@ -1,0 +1,419 @@
+<html style="text-align: center" >
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=0.5" />
+
+    <link rel="stylesheet"  href="../libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet"  href="../libs/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet"  href="../libs/css/select2.min.css" />
+
+    <link rel="stylesheet"  href="../libs/css/jquery-ui.min.css" />
+
+    <script src="../libs/js/jquery-2.2.2.min.js"></script>
+    <script src="../libs/js/bootstrap.min.js"></script>
+    <script src="../libs/js/select2.min.js"></script>
+
+    <script src="../libs/js/jquery-ui.min.js"></script>
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+
+
+            $("#tabs").tabs();
+
+            $("#queue").on('click','.delrow',function(){
+
+                var str= $(this).parent().parent().text().replace(/\s/g,'');
+
+                $.ajax({
+                    url:"/repo",
+                    data:{qcr: str},
+                });
+                 $(this).parent().parent().remove();
+            });
+
+
+
+
+
+            $(".repolist").select2();
+            $(".branlist").select2();
+            $(".srvlist").select2();
+
+
+
+            $(".fileitem").select2().on("select2:close",function(e){
+
+                $.ajax({
+                    url:"/repo/all",
+                    data:{item:true,path:true,srv:$(".fileitem").val()},
+                    success:function(r){
+
+                        $("#srvlist3").val(r.srvid).trigger("change").prop("disabled", true);
+                        $("#file3").val(r.path).prop("disabled", true);
+                        if (!r.srvid){
+                            $("#srvlist3").val(r.srvid).trigger("change").prop("disabled", false);
+                            $("#file3").val(r.path).prop("disabled", false);
+
+                        }
+
+                    }
+                })
+            });
+
+
+
+
+
+            $(".repolist").select2().on("select2:close",function(e){
+                $.ajax({
+                    url:"/repo/all",
+                    data:{repo:$("#repolist option:selected").text(),"ty":2},
+                    success:function(r){
+                        $(".srvlist").empty();
+
+                        $(".srvlist").select2({
+                       data:r,
+                       placeholder:{id:'-1',text:"server"},
+                       allowClear: true,
+                    });
+
+
+
+                    }
+
+                });
+                $.ajax({
+                    url:"/repo/all",
+                    data:{id:$("#repolist").val(),b:"true"},
+                     cache: false,
+                    success:function(r) {
+                        $(".branlist").empty();
+                        $("#srvlist").val("-1").trigger("change");
+                        $(".branlist").select2({data:[{id:'-1',text:"branch"}]});
+                        $(".branlist").select2({
+                        data:r,
+                        placeholder:{id:'-1',text:"branch"},
+                        allowClear: true,
+                    });
+                    }
+                }
+                )
+            });
+
+
+
+            $.ajax({
+                url:"/repo/all",
+                data:{s:false},
+                success:function(r){
+                    $(".repolist").select2({
+                       data:r,
+                       placeholder:{id:'-1',text:"select git repo"},
+                       allowClear: true,
+                    });
+                }
+            })
+
+/*
+            $.ajax({
+                url:"/repo/all",
+                data:{s:true},
+                success:function(r){
+                    $(".srvlist").select2({
+                       data:r,
+                       placeholder:{id:'-1',text:"server"},
+                       allowClear: true,
+                    });
+                }
+            })
+
+*/
+            $.ajax({
+                url:"/repo/all",
+                data:{item:true},
+                success:function(r){
+                    $(".fileitem").select2({
+                       data:r,
+                       placeholder:{id:'-1',text:"item"},
+                       allowClear: true,
+                    });
+                }
+            })
+
+
+            $("#branlist").autocomplete({
+                source:["develop","maser"],
+                autoFocus: true
+            })
+
+
+
+            $("#checkreq").click(function(){
+
+                $.ajax({
+                    url:"/repo",
+                    data:{id:$("#repolist").val() ,name:$("#branlist option:selected").text(),srv:$("#srvlist").val()},
+                    success: function (r) {
+                        if (typeof(r) == "object"){
+                            $("#queue").append("<tr><td>"+r.Name+"</td><td>"+r.Branch+"</td><td>"+r.Build+"</td><td>"+r.Server+"</td><td>"+r.Path+"</td><td><a class='delrow' id='task"+ r.Len+"'>x</a></td></tr>");
+                        }else{
+                            alert(r);
+                        }
+                    }
+                })
+            })
+
+
+
+            /*
+
+
+            $("#checkreq2").click(function(){
+
+                $.ajax({
+                    url:"/repo",
+                    data:{id:$("#repolist2").val() ,name:$("#branlist2").val(),srv:$("#srvlist2").val(),ifile:$("#file2").val()},
+                    success: function (r) {
+                        if (typeof(r) == "object"){
+                            $("#queue").append("<tr><td>"+r.Name+"</td><td>"+r.Branch+"</br>"+r.Ifile+"</td><td>"+r.Server+"</td><td>"+r.Path+"</td><td><a class='delrow' id='task"+ r.Len+"'>x</a></td></tr>");
+                        }else{
+                            alert(r);
+                        }
+                    }
+                })
+
+            })
+
+            function progressHandlingFunction(e){
+                     $("#checkreq3").prop("disabled", true);
+                    var percent = 0;
+                    var position = e.loaded || e.position;
+                    var total = e.total;
+                    if (e.lengthComputable) {
+                        percent = Math.ceil(position / total * 100);
+                        $("#checkreq3").text(percent);
+                        if (percent == 100) {
+                            $("#checkreq3").prop("disabled", false);
+                            $("#checkreq3").text("add");
+                        };
+                    }
+
+
+
+            }
+            $("#checkreq3").click(function(e){
+
+                e.preventDefault();
+                var formData = new FormData();
+                formData.append("file",$("#file")[0].files[0]);
+                formData.append("id",$("#fileitem").val())
+                formData.append("srv",$("#srvlist3").val())
+                formData.append("path",$("#file3").val())
+
+                $.ajax({
+                     url:"/repo",
+                     data: formData,
+                     cache:false,
+                     processData:false,
+                     contentType:false,
+                     type:"POST",
+                     xhr:function(){
+                         myXhr = $.ajaxSettings.xhr();
+                         if(myXhr.upload){
+
+                             myXhr.upload.addEventListener('progress',progressHandlingFunction,false);
+
+                         }
+                         return myXhr;
+                     },
+                     //dataType:"text",
+                     success:function(r){
+
+                         if (typeof(r) == "object"){
+
+                            $("#queue").append("<tr><td>"+r.Name+"</td><td>"+r.Branch+"</td><td>"+r.Server+"</td><td>"+r.Path+"</td><td><a class='delrow' id='task"+ r.Len+"'>x</a></td></tr>");
+
+                         }else{
+                             alert(r);
+                         }
+                     }
+
+                })
+             });
+*/
+            var loc = window.location
+            var uri = 'ws:'
+            uri += '//' + loc.host;
+            uri += '/ws';
+            var ws =new WebSocket(uri);
+
+            ws.onmessage=function(e){
+                alert(e.data);
+                var data =eval("("+e.data+")");
+
+                task="#task"+ data.id
+                $(task).removeClass("delrow").text("");
+
+
+                if ($("#logpage ul").length >0) {
+
+                    if ($("a[href='#logtab-" + data.id+"']").length == 0) {
+
+                        $("#logpage ul").append(
+
+                                $("<li>")
+                                        .append(
+                                        $("<a>")
+                                                .attr("data-toggle","tab")
+                                                .attr('href',"#logtab-" + data.id).text(data.item)
+                                )
+                        )
+                     }
+
+                }else {
+
+                    $("<ul/>").addClass("nav nav-tabs")
+                               .appendTo($("#logpage")).after( $("<div/>").addClass("tab-content").attr("id","aa"))
+
+
+                }
+
+
+                if ($("#logtab-"+data.id).length >0 ) {
+
+                    $("#logtab-"+data.id).append(data.message+"</br>")
+
+                }else{
+
+                     $("#aa").append(
+                             $("<div/>").addClass("tab-pane fade")
+                                     .css("overflow","auto")
+                                     .css("height","400px")
+                                     .attr("id","logtab-" + data.id)
+                     )
+
+                }
+
+            }
+
+            $("#gopb").click(function(){
+                ws.send("gopb");
+            })
+
+
+    });
+
+
+
+
+
+    </script>
+
+</head>
+<body style="text-align: left" >
+
+
+<div  style="width:580px;margin-top: 50px;margin-left: auto;margin-right: auto;margin-bottom: 50px;" >
+    {{ .curr_user.Name }}
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabs-1">from repo</a> </li>
+            <!--
+            <li><a href="#tabs-2">from repo  file</a></li>
+            <li><a href="#tabs-3">from file</a></li>
+            -->
+        </ul>
+        <div id="tabs-1">
+
+            <select id="repolist" class="repolist" >
+                <option value="-1"></option>
+            </select>
+
+
+            <select id="branlist" class="branlist">
+                 <option value="-1"></option>
+            </select>
+
+
+            <select id="srvlist" class="srvlist" >
+                 <option value="-1"></option>
+            </select>
+            </br>
+            <button id="checkreq">add</button>
+        </div>
+
+
+<!--
+        <div id="tabs-2">
+            <select id="repolist2" class="repolist" >
+                <option value="-1"></option>
+            </select>
+
+            <input id="branlist2" >
+            <select id="srvlist2" class="srvlist"  >
+                <option value="-1"></option>
+            </select>
+            <button id="checkreq2"  >add</button><br>
+            <textarea id="file2" ></textarea>
+
+        </div>
+        <div id="tabs-3">
+            <form>
+                <input  id="file" type="file"   style="float: left;width: 43%">
+                <select id="fileitem" class="fileitem" style="width: 120px" >
+                     <option value="-1"></option>
+                </select>
+                <select id="srvlist3" class="srvlist" style="width: 110px" >
+                    <option value="-1"></option>
+                </select>
+                <button id="checkreq3">add</button><br>
+                <input  id="file3" style="width: 87%">
+
+            </form>
+
+        </div>
+        -->
+    </div>
+
+        <div style="margin-top: 100px;">
+            <table id="queue" border="0" width="100%">
+                    <tr>
+                        <th>ITEM</th>
+                        <th></th>
+                        <th></th>
+                        <th>SERVER</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+            {{with .queue}}
+
+                {{range .}}
+                 <tr>
+                     <td>{{.Name}}</td>
+                     <td>{{.Branch}}<br>{{.Ifile}}</td>
+
+                     <td>{{ .Build }}</td>
+                     <td>{{.Server}}</td>
+                     <td style="word-wrap:break-word;word-break:break-all;">{{.Path}}</td>
+                     <td><a class='delrow' id="task{{.Len}}">x</a></td>
+                 </tr>
+                {{end}}
+
+                {{end}}
+            </table>
+        </div>
+    <button id="gopb" style="float: left;margin-top: 100px;margin-left: auto;margin-right: auto">Go</button>
+    <div class="tabbable" id="logpage" style="margin-top: 200px" >
+
+
+    </div>
+
+</div>
+
+</body>
+
+
+</html>

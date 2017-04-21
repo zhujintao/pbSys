@@ -1,116 +1,125 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
-    <title>PBSys</title>
-    <link rel="stylesheet" href="{{ static_url("css/bootstrap.min.css") }}" type="text/css"/>
-    <link rel="stylesheet" href="{{ static_url("css/bootstrap-theme.min.css") }}" type="text/css"/>
-    <script type="text/javascript" src="{{ static_url("js/jquery.min.js") }}"> </script>
+<html style="text-align: center" >
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=0.5" />
 
-    
-    
-<style type="text/css">
-    
-html 	{ text-align : center;  }
+    <link rel="stylesheet"  href="../libs/css/bootstrap.min.css"/>
+    <link rel="stylesheet"  href="../libs/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet"  href="../libs/css/select2.min.css" />
 
-body { 
-position : relative; 
-width : 770px; 
-margin : 0 auto; 
-text-align : left; }
+    <link rel="stylesheet"  href="../libs/css/jquery-ui.min.css" />
 
-select input { margin: 0 auto;}
+    <script src="../libs/js/jquery-2.2.2.min.js"></script>
+    <script src="../libs/js/bootstrap.min.js"></script>
+    <script src="../libs/js/select2.min.js"></script>
 
-html { 
-background-color : #f1efe2; }
+    <script src="../libs/js/jquery-ui.min.js"></script>
 
-body { 
-padding-top : 50px; }
-    	
- </style>
+     <script src="../libs/js/request.js"></script>
 
- </head>
- <body>
- 	
-    
- 	
- 	
 
-<div id="nav" style="height:20px"> 
-	<span style="float: right" >{{ current_user['name'] }}</b> -<a href="/pbsys/auth/logout">{{ _("Sign out") }}</a></span>
 
-	
-	
-	  
+</head>
+<body style="text-align: left" >
+
+
+<div  style="width:580px;margin-top: 50px;margin-left: auto;margin-right: auto;margin-bottom: 50px;" >
+
+    {{ .curr_user.Name }}
+
+    <div id="tabs">
+        <ul>
+            <li><a href="#tabs-1">from repo</a> </li>
+            <!--
+            <li><a href="#tabs-2">from repo  file</a></li>
+            <li><a href="#tabs-3">from file</a></li>
+            -->
+        </ul>
+        <div id="tabs-1">
+
+            <select id="repolist" class="repolist" >
+                <option value="-1"></option>
+            </select>
+
+
+            <select id="branlist" class="branlist">
+                 <option value="-1"></option>
+            </select>
+
+
+            <select id="srvlist" class="srvlist" >
+                 <option value="-1"></option>
+            </select>
+            </br>
+            <button id="checkreq">add</button>
+        </div>
+
+
+    </div>
+
+        <div style="margin-top: 100px;">
+            <table id="queue" border="0" width="100%">
+                    <tr>
+                        <th>ITEM</th>
+                        <th></th>
+                        <th></th>
+                        <th>SERVER</th>
+                        <th></th>
+
+                    </tr>
+            {{with .queues}}
+
+                {{range .}}
+                 <tr>
+                     <td>{{.Name}}</td>
+                     <td>{{.Branch}}</td>
+
+                     <td>{{ .Branch_test }}</td>
+                     <td>{{.Server}}</td>
+                    {{ if eq .Branch_test_status "queue" }}
+                      <td><a class='delrow' id="task{{ .Taskid }}">x</a></td>
+                     {{ else }}
+
+                     <td>
+
+                         {{ if eq .Branch_test_status "pass" }}
+                            <a class='requ_upto' id="task{{ .Taskid }}">pubto</a>
+                    {{ else }}
+
+                         <a id="task{{ .Taskid }}">{{ .Branch_test_status }}</a>
+                     {{ end }}
+
+                     </td>
+                     {{ end }}
+
+                 </tr>
+                {{end}}
+
+                {{end}}
+            </table>
+        </div>
+    <button id="apply_test" style="float: left;margin-top: 100px;margin-left: auto;margin-right: auto">apply test</button>
+    <div class="tabbable" id="logpage" style="margin-top: 200px" >
+        <p><hr></p>
+        <table id="status"  width="100%">
+
+        {{with .works}}
+            {{ range .}}
+
+                <tr>
+                    <td>{{ .Name }}</td><td>{{ .Branch }}</td><td>{{ .Branch_test }}</td><td><samp id="reco{{ .Taskid }}">{{ .Branch_test_status }}</samp></td><td>{{ .Owen }}</td>
+                </tr>
+
+
+            {{ end }}
+        {{end}}
+
+
+    </table>
+    </div>
+
 </div>
 
+</body>
 
 
-<div id="con"  class="panel panel-default">
-    {% for blist in blists%}
-
- <form class="panel panel-default" action="/pbsys/pub" method="post" target="pub"   onsubmit="window.open('','pub','scrollbars=yes,menubar=no,height=400,width=600,resizable=yes,toolbar=no,location=no,status=no');">
-{% module xsrf_form_html() %}
- <div class="panel-heading"> <b>{{blist['pname']}}</b>
-        {%if blist['pnumb'] !="" %}
-	<input type="checkbox"  name="sid" value="{{blist['pnumb']}}" style="margin: 0; padding: 0 5px 0 0;" />
-        {%end%}
-
-
-        <select name="cid" style="margin:0;padding:0;position: absolute;right:7%"  >
-                <option selected></option>
-  		{% for  branch in  blist['bname'] %}
-                <option value="{{branch}}" >{{branch}}</option>
-                {%end%}
-        </select>
-
- <input type="submit"  value="go" style="border: none;color: white;background: #003C52;position: absolute;right:1%" onClick="{if(confirm('\nupdate to:' + cid.value  )){return true;}return false;}"  />
- <input type="submit"  name="check" value="c" style="border: none;color: white;background: #003C52;position: absolute;right:5%" onClick="{if(confirm('\ncheck:' + cid.value  )){return true;}return false;}"  />
-
-
-
-
-
-
-
-</div>
-
-  
-  <table class="table" >
-    
-     <thead >  
-    <tr>  
-      <th></th>  
-     
-    </tr>  
-  </thead>  
-  <tbody>  
-         {%if blist['mlist']%}
-              {% for mlist in blist['mlist']%}
-    <tr style="font-size: 12px;">  
-
-
-   	 <td>
-         <input type="checkbox"  name="sid" value="{{mlist['mnumb']}}" style="margin: 0; padding: 0 5px 0 0;" /> {{mlist['mname']}} <font color="#66b3ff"><i>{{mlist['mvers']}}</i></font>
-
-         </td> 
-
-
-    </tr>  
-              {%end%}
-         {%end%}
-  </tbody>  
-  </table>
-	
-</form>
-  {% end %}
-
-</div>
-
-	
-	
-
-  	
-    <script type="text/javascript" src="{{ static_url("js/bootstrap.min.js") }}"> </script>
-  </body>
 </html>

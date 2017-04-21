@@ -1,29 +1,26 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
-    <title>PBSys</title>
-    <link rel="stylesheet" href="{{ static_url("chat.css") }}" type="text/css"/>
-    <script src="{{ static_url("core.js") }}" type="text/javascript"></script>
-  </head>
-  <body>
-	
-	<form action="/pbsys/auth/login" method="post" enctype="multipart/form-data">
-		<div align="center">
-		<table>
-			<tr>
-				<td> <input type="text" name="t1" onclick="id_rsa.click()" value="Click Here..."/>  
-					 <input type="file" name="id_rsa" style="display: none" onchange="t1.value=this.value" />															
-			    </td>
-			</tr>
-			<tr> 
-				<td align="right"> <input type="submit" value=" Login " /> </td>
-			</tr>
-			
-		</table>
-		</div> 
-	{% module xsrf_form_html() %}
-	</form>    
-
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>login|Pbsys</title>
+    <link rel="stylesheet" href="../libs/css/bootstrap.min.css">
+    <script type="text/javascript" src="../libs/js/jquery-1.12.2.min.js"></script>
+</head>
+<body style="text-align:center">
+<div class="container">
+    <form method="post">
+username
+<input id="login-username" name="username" type="text">
+password
+<input name="password" type="password">
+role
+<select name="role">
+    <option value ="deve">deve</option>
+    <option value ="test">test</option>
+    <option value ="prod">prod</option>
+</select>
+        <input type="submit" value="login">
+</form>
+    </div>
+</body>
 </html>
